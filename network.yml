@@ -75,7 +75,7 @@ Resources:
       CidrBlock: !Ref Private1CIDR
       Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName} Private Subnet 1
+          Value: !Sub ${EnvironmentName} Private Subnet AZ1
   
   UdagramPrivateSubnet2:
     Type: AWS::EC2::Subnet
@@ -85,7 +85,7 @@ Resources:
       CidrBlock: !Ref Private2CIDR
       Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName} Private Subnet 2
+          Value: !Sub ${EnvironmentName} Private Subnet AZ2
 
   # - - Public Subnets - -
   UdagramPublicSubnet1:
@@ -96,7 +96,7 @@ Resources:
       CidrBlock: !Ref Public1CIDR
       Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName} Public Subnet 1
+          Value: !Sub ${EnvironmentName} Public Subnet AZ1
 
   UdagramPublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -106,7 +106,7 @@ Resources:
       CidrBlock: !Ref Public2CIDR
       Tags:
         - Key: Name
-          Value: !Sub ${EnvironmentName} Public Subnet 2
+          Value: !Sub ${EnvironmentName} Public Subnet AZ2
 
 
   # - -
@@ -131,13 +131,13 @@ Resources:
     Type: AWS::EC2::NatGateway
     Properties:
       AllocationId: !GetAtt UdagramNat1EIP.AllocationId
-      SubnetId: !Ref PublicSubnet1
+      SubnetId: !Ref UdagramPublicSubnet1
 
   UdagramNat2:
     Type: AWS::EC2::NatGateway
     Properties:
       AllocationId: !GetAtt UdagramNat2EIP.AllocationId
-      SubnetId: !Ref PublicSubnet2
+      SubnetId: !Ref UdagramPublicSubnet2
   
 
   # - -
@@ -176,7 +176,7 @@ Resources:
 
 
   # - - Private Routing Subnet 1 - -
-  UdagramPrivateRoutingTable1:
+  UdagramPrivateRouteTable1:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref UdagramVPC
@@ -195,10 +195,10 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref UdagramPrivateSubnet1
-      RouteTableId: !Ref UdagramPrivateRoutingTable1
+      RouteTableId: !Ref UdagramPrivateRouteTable1
 
   # - - Private Routing Subnet 2 - -
-  UdagramPrivateRoutingTable2:
+  UdagramPrivateRouteTable2:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId: !Ref UdagramVPC
@@ -209,7 +209,7 @@ Resources:
   DefaultPrivateRoute2:
     Type: AWS::EC2::Route
     Properties:
-      RouteTableId: !Ref UdagramPrivateRoutingTable2
+      RouteTableId: !Ref UdagramPrivateRouteTable2
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref UdagramNat2
 
@@ -217,8 +217,55 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId: !Ref UdagramPrivateSubnet2
-      RouteTableId: !Ref UdagramPrivateRoutingTable2
+      RouteTableId: !Ref UdagramPrivateRouteTable2
 
 
 
 Outputs:
+  # - - VPC - -
+  UdagramVPCID:
+    Description: VPC ID for use with server stack
+    Value: !Ref UdagramVPC
+    Export: 
+      Name: !Sub ${EnvironmentName}-VPCID
+
+  # - - Subnets - -
+  PublicSubnet1:
+    Description: Reference to Public Subnet 1
+    Value: !Ref UdagramPublicSubnet1
+    Export: 
+      Name: !Sub ${EnvironmentName}-PUB-SN1
+  
+  PublicSubnet2:
+    Description: Reference to Public Subnet 2
+    Value: !Ref UdagramPublicSubnet2
+    Export: 
+      Name: !Sub ${EnvironmentName}-PUB-SN2
+  
+  PrivateSubnet1:
+    Description: Reference to Private Subnet 1
+    Value: !Ref UdagramPrivateSubnet1
+    Export: 
+      Name: !Sub ${EnvironmentName}-PRI-SN1
+  
+  PrivateSubnet2:
+    Description: Reference to Private Subnet 2
+    Value: !Ref UdagramPrivateSubnet2
+    Export: 
+      Name: !Sub ${EnvironmentName}-PRI-SN2
+
+  # - - Subnet Lists - -
+  PublicSubnets:
+    Description: Reference to list of public subnets
+    Value: !Join [',', [!Ref UdagramPublicSubnet1, !Ref UdagramPublicSubnet2]]
+    Export: 
+      Name: !Sub ${EnvironmentName}-PUB-NETS
+
+  PrivateSubnets:
+    Description: Reference to list of private subnets
+    Value: !Join [',', [!Ref UdagramPrivateSubnet1, !Ref UdagramPrivateSubnet2]]
+    Export: 
+      Name: !Sub ${EnvironmentName}-PRI-NETS
+  
+  
+
