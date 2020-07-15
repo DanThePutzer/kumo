@@ -26,6 +26,22 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName} VPC
+  
+  # - -
+  # Internet Gateway
+  # - -
+  UdagramInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Internet Gateway
+  # Connecting Internet Gateway to VPC
+  UdagramInternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref UdagramVPC
+      InternetGatewayId: !Ref UdagramInternetGateway
 
 
 Outputs:
