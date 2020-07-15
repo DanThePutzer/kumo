@@ -62,7 +62,7 @@ Resources:
       InternetGatewayId: !Ref UdagramInternetGateway
 
 
-# - -
+  # - -
   # Subnets
   # - -
 
@@ -108,6 +108,37 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName} Public Subnet 2
 
+
+  # - -
+  # NAT Gateways + Elastic IPs
+  # - -
+
+  # - - Elastic IPs - -
+  Nat1EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: UdagramInternetGateway
+    Properties:
+      Domain: vpc
+  
+  Nat2EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: UdagramInternetGateway
+    Properties:
+      Domain: vpc
+
+  # - - NAT Gateways - -
+  UdagramNat1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt Nat1EIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+  UdagramNat2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt Nat2EIP.AllocationId
+      SubnetId: !Ref PublicSubnet2
+  
 
 
 Outputs:
