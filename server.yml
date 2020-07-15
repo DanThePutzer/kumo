@@ -97,6 +97,24 @@ Resources:
           aws s3 cp s3://udacity-demo-1/udacity.zip .
           unzip -o udacity.zip
 
-  
+  # - -
+  # Auto Scaling Groups
+  # - -
+
+  UdagramAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier: # Passing subnet references
+      - Fn::ImportValue:
+          !Sub ${EnvironmentName}-PRI-NETS
+      LaunchConfigurationName: !Ref UdagramLaunchConfig
+      MaxSize: 6
+      MinSize: 4
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Auto Scaling Group
+          PropagateAtLaunch: True
+
+      # Need to add target group ARN when created
 
   
