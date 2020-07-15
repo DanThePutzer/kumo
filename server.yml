@@ -68,5 +68,35 @@ Resources:
           CidrIp: 0.0.0.0/0
 
   
+  # - -
+  # Launch Configurations
+  # - -
+
+  UdagramLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      IamInstanceProfile: !Ref UdagramIAM
+      ImageId: ami-0b1e2eeb33ce3d66f # Using Amazon Linux AMI 2
+      InstanceMonitoring: true|false
+      InstanceType: t2.micro # Keeping it free tier to save credits
+      KeyName: UdagramPrivateInstances # Key to enable SSH access when online
+      SecurityGroups:
+        - Ref: UdagramWebServerSecurityGroup
+      BlockSizeMappings:
+        - DeviceName: '/dev/mnt1'
+          Ebs:
+            VolumeSize: 10
+      UserData:
+        Fn::Base64: !Sub
+          #!/bin/bash
+          apt-get update -y
+          apt-get install unzip awscli -y
+          apt-get install apache2 -y
+          systemctl start apache2.service
+          cd /var/www/html
+          aws s3 cp s3://udacity-demo-1/udacity.zip .
+          unzip -o udacity.zip
+
+  
 
   
