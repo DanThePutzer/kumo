@@ -136,7 +136,45 @@ Resources:
       UnhealthyThresholdCount: 5 # Tries for 5 times every 35 seconds
       TargetGroupAttributes: 
       - Key: slow_start.duration_seconds # Adding slow start to counter timeouts when launching
-        Value: 60
+        Value: 120
       VpcId:
         Fn::ImportValue:
           !Sub ${EnvironmentName}-VPCID
+
+
+  # - -
+  # Load Balancers
+  # - -
+
+  UdagramLoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      SecurityGroups:
+        - Ref: UdagramLoadBalancerSecurityGroup
+      Subnets:
+        - Fn::ImportValue: !Sub ${EnvironmentName}-PUB-SN1
+        - Fn::ImportValue: !Sub ${EnvironmentName}-PUB-SN2
+  
+  # Creating load balancing listener
+  UdagramLoadBalancingListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      DefaultActions:
+      - Type: forward
+        TargetGroupARn: !Ref UdagramLoadBalancingTargetGroup
+      LoadBalancerArn: !Ref UdagramLoadBalancer
+      Port: 80
+      Protocol: HTTP
+  
+  # Creating load balancing listener rule
+  LoadBalancingListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref UdagramLoadBalancingTargetGroup
+      Conditions:
+      - Field: path-pattern
+        Values: [/]
+      ListenerArn: !Ref UdagramLoadBalancingListener
+      Priority: 1
