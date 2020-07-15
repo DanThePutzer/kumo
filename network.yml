@@ -67,7 +67,7 @@ Resources:
   # - -
 
   # - - Private Subnets - -
-  PrivateSubnet1:
+  UdagramPrivateSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !Select [0, !GetAZs ''] # Setting different AZs for subnets
@@ -77,7 +77,7 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName} Private Subnet 1
   
-  PrivateSubnet2:
+  UdagramPrivateSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !Select [1, !GetAZs ''] # Setting different AZs for subnets
@@ -88,7 +88,7 @@ Resources:
           Value: !Sub ${EnvironmentName} Private Subnet 2
 
   # - - Public Subnets - -
-  PublicSubnet1:
+  UdagramPublicSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !Select [0, !GetAZs '']
@@ -98,7 +98,7 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName} Public Subnet 1
 
-  PublicSubnet2:
+  UdagramPublicSubnet2:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: !Select [1, !GetAZs '']
@@ -114,13 +114,13 @@ Resources:
   # - -
 
   # - - Elastic IPs - -
-  Nat1EIP:
+  UdagramNat1EIP:
     Type: AWS::EC2::EIP
     DependsOn: UdagramInternetGateway
     Properties:
       Domain: vpc
   
-  Nat2EIP:
+  UdagramNat2EIP:
     Type: AWS::EC2::EIP
     DependsOn: UdagramInternetGateway
     Properties:
@@ -130,15 +130,95 @@ Resources:
   UdagramNat1:
     Type: AWS::EC2::NatGateway
     Properties:
-      AllocationId: !GetAtt Nat1EIP.AllocationId
+      AllocationId: !GetAtt UdagramNat1EIP.AllocationId
       SubnetId: !Ref PublicSubnet1
 
   UdagramNat2:
     Type: AWS::EC2::NatGateway
     Properties:
-      AllocationId: !GetAtt Nat2EIP.AllocationId
+      AllocationId: !GetAtt UdagramNat2EIP.AllocationId
       SubnetId: !Ref PublicSubnet2
   
+
+  # - -
+  # Routing
+  # - -
+
+  # - - Public Route Table - -
+  UdagramPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref UdagramVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Routes
+
+  # - - Public Routes - -
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref UdagramPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref UdagramInternetGateway
+    
+  # - - Public Route Table Associations - -
+  PublicRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref UdagramPublicSubnet1
+      RouteTableId: !Ref UdagramPublicRouteTable
+
+  PublicRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref UdagramPublicSubnet2
+      RouteTableId: !Ref UdagramPublicRouteTable
+
+
+  # - - Private Routing Subnet 1 - -
+  UdagramPrivateRoutingTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref UdagramVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Routes 1
+
+  DefaultPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref UdagramPrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref UdagramNat1
+  
+  PrivateRouteTableAssociation1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref UdagramPrivateSubnet1
+      RouteTableId: !Ref UdagramPrivateRoutingTable1
+
+  # - - Private Routing Subnet 2 - -
+  UdagramPrivateRoutingTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref UdagramVPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Routes 2
+  
+  DefaultPrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref UdagramPrivateRoutingTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref UdagramNat2
+
+  PrivateRouteTableAssociation2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref UdagramPrivateSubnet2
+      RouteTableId: !Ref UdagramPrivateRoutingTable2
+
 
 
 Outputs:
