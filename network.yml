@@ -1,0 +1,31 @@
+Description: >
+  Daniel Putzer / Network stack for a simple web app
+
+Parameters:
+  # - - General Parameters - -
+  EnvironmentName:
+    Description: Environment name prefix to be identify connected resources in the console
+    Type: String
+
+  # - - VPC Parameters - -
+  VpcCIDR:
+    Description: IP adress range of VPC
+    Type: String
+    Default: 10.0.0.0/16
+
+Resources:
+
+  # - -
+  # VPC
+  # - -
+  UdagramVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} VPC
+
+
+Outputs:
