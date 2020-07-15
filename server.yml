@@ -20,4 +20,53 @@ Resources:
       Roles:
         - UdagramS3ReadOnly
 
+
+  # - -
+  # Security Groups
+  # - -
+
+  # Security group for web servers
+  UdagramWebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Set up HTTP traffic and SSH for web servers in private subnets
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${EnvironmentName}-VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80 # HTTP traffic for web communication
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22 # SSH for maintenance and debugging
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0 # All outbound traffic allowed since not really a security risk
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+
+  # Security group for load balancer
+  UdagramLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Set up HTTP traffic to and from load balancer
+      VpcId: 
+        Fn::ImportValue:
+          !Sub ${EnvironmentName}-VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80 # HTTP traffic for web communication
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  
+
   
