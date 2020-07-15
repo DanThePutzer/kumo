@@ -4,7 +4,7 @@ Description: >
 Parameters:
   # - - General Parameters - -
   EnvironmentName:
-    Description: Environment name prefix to be identify connected resources in the console
+    Description: Environment name prefix to be identify connected resources in the console and access proper outputs
     Type: String
 
   # - - VPC Parameters - -

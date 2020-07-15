@@ -1,0 +1,23 @@
+Description: >
+  Daniel Putzer / Server stack for a simple web app
+
+Parameters:
+  # - - General Parameters - -
+  EnvironmentName:
+    Description: Environment name prefix to be identify connected resources in the console and access proper outputs
+    Type: String
+
+
+Resources:
+
+  # - -
+  # IAM Profiles
+  # - -
+  
+  UdagramIAM:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Roles:
+        - UdagramS3ReadOnly
+
+  
