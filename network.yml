@@ -9,9 +9,27 @@ Parameters:
 
   # - - VPC Parameters - -
   VpcCIDR:
-    Description: IP adress range of VPC
+    Description: IP address range of VPC
     Type: String
     Default: 10.0.0.0/16
+
+  # - - Subnet Parameters - -
+  Private1CIDR:
+    Description: IP address range for PrivateSubnet1
+    Type: String
+
+  Private2CIDR:
+    Description: IP address range for PrivateSubnet1
+    Type: String
+
+  Public1CIDR:
+    Description: IP address range for PrivateSubnet1
+    Type: String
+
+  Public2CIDR:
+    Description: IP address range for PrivateSubnet1
+    Type: String
+
 
 Resources:
 
@@ -42,6 +60,54 @@ Resources:
     Properties:
       VpcId: !Ref UdagramVPC
       InternetGatewayId: !Ref UdagramInternetGateway
+
+
+# - -
+  # Subnets
+  # - -
+
+  # - - Private Subnets - -
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs ''] # Setting different AZs for subnets
+      VpcId: !Ref UdagramVPC
+      CidrBlock: !Ref Private1CIDR
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Subnet 1
+  
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs ''] # Setting different AZs for subnets
+      VpcId: !Ref UdagramVPC
+      CidrBlock: !Ref Private2CIDR
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Private Subnet 2
+
+  # - - Public Subnets - -
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs '']
+      VpcId: !Ref UdagramVPC
+      CidrBlock: !Ref Public1CIDR
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet 1
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs '']
+      VpcId: !Ref UdagramVPC
+      CidrBlock: !Ref Public2CIDR
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Public Subnet 2
+
 
 
 Outputs:
