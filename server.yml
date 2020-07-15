@@ -97,6 +97,7 @@ Resources:
           aws s3 cp s3://udacity-demo-1/udacity.zip .
           unzip -o udacity.zip
 
+
   # - -
   # Auto Scaling Groups
   # - -
@@ -114,7 +115,28 @@ Resources:
         - Key: Name
           Value: !Sub ${EnvironmentName} Auto Scaling Group
           PropagateAtLaunch: True
+      TargetGroupARNs:
+      - Ref: UdagramLoadBalancingTargetGroup
 
-      # Need to add target group ARN when created
 
-  
+  # - -
+  # Target Groups
+  # - -
+
+  UdagramLoadBalancingTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 35
+      HealthCheckPath: / # Healthcheck at root route
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 30 # If no reponse within 30 seconds -> unhealthy response
+      HealthyThresholdCount: 2 # 2 valid responses deem resource healthy
+      Port: 80 # Healthcheck at port 8080...
+      Protocol: HTTP # ...for HTTP response
+      UnhealthyThresholdCount: 5 # Tries for 5 times every 35 seconds
+      TargetGroupAttributes: 
+      - Key: slow_start.duration_seconds # Adding slow start to counter timeouts when launching
+        Value: 60
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${EnvironmentName}-VPCID
