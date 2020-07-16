@@ -8,8 +8,8 @@ IaC for a simple web application deployed on AWS CloudFormation
 
 This repository contains the final submission for project 2 of Udacity's **Cloud DevOps Engineer** nano degree. It contains code to deploy a highly available web application on AWS using CloudFormation.
 
-The deployed and running web application can be accessed through the following link:
-http://udagr-udagr-19k1b28tok4tm-1769174759.us-west-2.elb.amazonaws.com
+The deployed and running web application can be accessed **[here](http://udagr-udagr-19k1b28tok4tm-1769174759.us-west-2.elb.amazonaws.com)**
+
 
 For details on the infrastructure and routing see **ArchitectureDiagram.pdf** and **RoutingOverview.pdf** respectively.
 
