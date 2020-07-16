@@ -67,6 +67,25 @@ Resources:
           ToPort: 80
           CidrIp: 0.0.0.0/0
 
+  # Security group for Jumpbox
+  UdagramJumpboxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Setting up Jumpbox for SSH access to the Private Subnets
+      VpcId:
+        Fn::ImportValue:
+          !Sub ${EnvironmentName}-VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0
+
   
   # - -
   # Launch Configurations
@@ -76,18 +95,17 @@ Resources:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
       IamInstanceProfile: !Ref UdagramIAM
-      ImageId: ami-0b1e2eeb33ce3d66f # Using Amazon Linux AMI 2
-      InstanceMonitoring: true|false
+      ImageId: ami-003634241a8fcdec0 # Using Ubuntu 18.04
       InstanceType: t2.micro # Keeping it free tier to save credits
       KeyName: UdagramPrivateInstances # Key to enable SSH access when online
       SecurityGroups:
         - Ref: UdagramWebServerSecurityGroup
-      BlockSizeMappings:
-        - DeviceName: '/dev/mnt1'
+      BlockDeviceMappings:
+        - DeviceName: '/dev/sdk'
           Ebs:
             VolumeSize: 10
       UserData:
-        Fn::Base64: !Sub
+        Fn::Base64: !Sub |
           #!/bin/bash
           apt-get update -y
           apt-get install unzip awscli -y
@@ -147,7 +165,7 @@ Resources:
   # - -
 
   UdagramLoadBalancer:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       SecurityGroups:
         - Ref: UdagramLoadBalancerSecurityGroup
@@ -161,7 +179,7 @@ Resources:
     Properties: 
       DefaultActions:
       - Type: forward
-        TargetGroupARn: !Ref UdagramLoadBalancingTargetGroup
+        TargetGroupArn: !Ref UdagramLoadBalancingTargetGroup
       LoadBalancerArn: !Ref UdagramLoadBalancer
       Port: 80
       Protocol: HTTP
@@ -178,3 +196,26 @@ Resources:
         Values: [/]
       ListenerArn: !Ref UdagramLoadBalancingListener
       Priority: 1
+
+
+  # - -
+  # Udagram Jumpbox
+  # - -
+  UdagramJumpbox:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: UdagramJumpbox
+      ImageId: ami-0b1e2eeb33ce3d66f 
+      InstanceType: t2.micro
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          GroupSet:
+          - Ref: UdagramJumpboxSecurityGroup
+          SubnetId:
+            Fn::ImportValue:
+              !Sub ${EnvironmentName}-PUB-SN1
+      Tags:
+      - Key: Name
+        Value: !Sub ${EnvironmentName} Jumpbox
+      
