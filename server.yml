@@ -97,7 +97,6 @@ Resources:
       IamInstanceProfile: !Ref UdagramIAM
       ImageId: ami-003634241a8fcdec0 # Using Ubuntu 18.04
       InstanceType: t2.micro # Keeping it free tier to save credits
-      KeyName: UdagramPrivateInstances # Key to enable SSH access when online
       SecurityGroups:
         - Ref: UdagramWebServerSecurityGroup
       BlockDeviceMappings:
@@ -206,7 +205,6 @@ Resources:
   UdagramJumpbox:
     Type: AWS::EC2::Instance
     Properties:
-      KeyName: UdagramJumpbox
       ImageId: ami-0b1e2eeb33ce3d66f 
       InstanceType: t2.micro
       NetworkInterfaces:
