@@ -199,8 +199,10 @@ Resources:
 
 
   # - -
-  # Udagram Jumpbox
+  # Udagram Jumpbox (aka Bastion Host)
   # - -
+
+  # Actually used this to debug an issue with the execution of the user data script where apache wasn't installed properly
   UdagramJumpbox:
     Type: AWS::EC2::Instance
     Properties:
@@ -218,4 +220,17 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub ${EnvironmentName} Jumpbox
+
+
+Outputs:
+  # - - URL to up-and-running webpage - -
+  DeployedSiteURL:
+    Value: !Join ['', [ 'http://', !GetAtt UdagramLoadBalancer.DNSName ]]
+    Description: URL to up-and-running webpage
+
+  # - - Jumpbox Public IP - -
+  JumpboxPublicIP:
+    Value: !GetAtt UdagramJumpbox.PublicIp
+    Description: Public IP to SSH into Jumpbox
+
       
